@@ -11,6 +11,7 @@ const waitingRoom = [];
 const getRoomById = (id) => {
   return room.find((room) => room.id === id);
 };
+
 const getRoomByUserId = (id) => {
   return room.find((room) => room.users.hasOwnProperty(id));
 };
