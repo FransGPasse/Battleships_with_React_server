@@ -45,24 +45,21 @@ const handleUserJoined = async (socketID) => {
 };
 
 const handleDisconnect = function () {
-  debug(`Client ${this.id} disconnected :(`);
-
   // find the room that this socket is part of
-  const room = getRoomByUserId(this.id);
+  const gameRoom = getRoomByUserId(this.id);
 
   // if socket was not in a room, don't broadcast disconnect
-  if (!room) {
+  if (!gameRoom) {
     return;
   }
 
   // let everyone in the room know that this user has disconnected
-  this.broadcast.to(room.id).emit("user_disconnected", room.users[this.id]);
+  this.broadcast.to(gameRoom).emit("user_disconnected");
+
+  debug(`User ${this.id} disconnected from room 😓`);
 
   // remove user from list of users in that room
-  delete room.users[this.id];
-
-  // broadcast list of users in room to all connected sockets EXCEPT ourselves
-  this.broadcast.to(room.id).emit("user:list", room.users);
+  delete gameRoom[this.id];
 };
 
 //Export controller and attach handlers to events
