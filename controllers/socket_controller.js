@@ -8,12 +8,12 @@ let io = null;
 let room = [];
 const waitingRoom = [];
 
-const getRoomById = (id) => {
-  return room.find((room) => room.id === id);
+const getRoomById = () => {
+  return room.find((room) => room === room);
 };
 
 const getRoomByUserId = (id) => {
-  return room.find((room) => room.users.hasOwnProperty(id));
+  return room.find((room) => room.hasOwnProperty(id));
 };
 
 //Lyssnar på "user_connected" och pushar in användaren i waitingRoom. När det finns två användare pushas de sedan in i rummet.
@@ -45,22 +45,13 @@ const handleUserJoined = async (socketID) => {
   }
 };
 
-const handleDisconnect = function () {
-  // find the room that this socket is part of
-  const gameRoom = getRoomByUserId(this.id);
-
-  // if socket was not in a room, don't broadcast disconnect
-  if (!gameRoom) {
-    return;
-  }
+const handleDisconnect = async () => {
+  const gameRoom = room;
 
   // let everyone in the room know that this user has disconnected
-  this.broadcast.to(gameRoom).emit("user_disconnected");
+  io.to(gameRoom).emit("user_disconnected");
 
-  debug(`User ${this.id} disconnected from room 😓`);
-
-  // remove user from list of users in that room
-  delete gameRoom[this.id];
+  debug(`The other user disconnected from the room 😓`);
 };
 
 //Export controller and attach handlers to events
@@ -72,5 +63,5 @@ module.exports = function (socket, _io) {
   socket.on("user_connected", handleUserJoined);
 
   // handle user disconnect
-  socket.on("user_disconnected", handleDisconnect);
+  socket.on("disconnect", handleDisconnect);
 };
