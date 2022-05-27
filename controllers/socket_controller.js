@@ -54,6 +54,10 @@ const handleDisconnect = async () => {
   debug(`The other user disconnected from the room 😓`);
 };
 
+const handleClickedOnBox = (click) => {
+  debug(`User clicked on box ${click}`)
+}
+
 //Export controller and attach handlers to events
 module.exports = function (socket, _io) {
   // save a reference to the socket.io server instance
@@ -64,4 +68,7 @@ module.exports = function (socket, _io) {
 
   // handle user disconnect
   socket.on("disconnect", handleDisconnect);
+
+  // handle clicked on box
+  socket.on("clicked_box", handleClickedOnBox);
 };
