@@ -6,7 +6,13 @@ let io = null;
 
 //Sätter rummet och waitingRoom till två tomma arrayer
 let room = [];
+let readyRoom = [];
 const waitingRoom = [];
+
+// randomize player
+const randomNumber = () => {
+ return Math.floor(Math.random() * 2);
+}
 
 const getRoomById = () => {
   return room.find((room) => room === room);
@@ -58,6 +64,15 @@ const handleClickedOnBox = (click) => {
   debug(`User clicked on box ${click}`)
 }
 
+const handlePlayerReady = (socketID) => {
+  readyRoom.push(socketID)
+  if (readyRoom.length === 2) {
+  const randomIndex = randomNumber()
+  debug(readyRoom[randomIndex])
+  io.to(readyRoom[randomIndex]).emit("your_turn")
+  }
+}
+
 //Export controller and attach handlers to events
 module.exports = function (socket, _io) {
   // save a reference to the socket.io server instance
@@ -71,4 +86,7 @@ module.exports = function (socket, _io) {
 
   // handle clicked on box
   socket.on("clicked_box", handleClickedOnBox);
+
+  // handle player ready 
+  socket.on("player_ready", handlePlayerReady);
 };
