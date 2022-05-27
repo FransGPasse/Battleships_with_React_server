@@ -7,12 +7,12 @@ let io = null;
 //Sätter rummet och waitingRoom till två tomma arrayer
 let room = [];
 let readyRoom = [];
-const waitingRoom = [];
+let waitingRoom = [];
 
 // randomize player
 const randomNumber = () => {
- return Math.floor(Math.random() * 2);
-}
+  return Math.floor(Math.random() * 2);
+};
 
 const getRoomById = () => {
   return room.find((room) => room === room);
@@ -52,26 +52,26 @@ const handleUserJoined = async (socketID) => {
 };
 
 const handleDisconnect = async () => {
-  const gameRoom = room;
-
   // let everyone in the room know that this user has disconnected
-  io.to(gameRoom).emit("user_disconnected");
+  io.to(room).emit("user_disconnected");
+
+  room = [];
 
   debug(`The other user disconnected from the room 😓`);
 };
 
 const handleClickedOnBox = (click) => {
-  debug(`User clicked on box ${click}`)
-}
+  debug(`User clicked on box ${click}`);
+};
 
 const handlePlayerReady = (socketID) => {
-  readyRoom.push(socketID)
+  readyRoom.push(socketID);
   if (readyRoom.length === 2) {
-  const randomIndex = randomNumber()
-  debug(readyRoom[randomIndex])
-  io.to(readyRoom[randomIndex]).emit("your_turn")
+    const randomIndex = randomNumber();
+    debug(readyRoom[randomIndex]);
+    io.to(readyRoom[randomIndex]).emit("your_turn");
   }
-}
+};
 
 //Export controller and attach handlers to events
 module.exports = function (socket, _io) {
@@ -87,6 +87,6 @@ module.exports = function (socket, _io) {
   // handle clicked on box
   socket.on("clicked_box", handleClickedOnBox);
 
-  // handle player ready 
+  // handle player ready
   socket.on("player_ready", handlePlayerReady);
 };
