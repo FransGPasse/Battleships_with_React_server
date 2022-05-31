@@ -4,23 +4,16 @@ const debug = require("debug")("battleships:socket_controller");
 //Socket.io server instance
 let io = null;
 
-//Sätter rummet och waitingRoom till två tomma arrayer
+//Sätter alla rum till arrayer
 let room = [];
+const waitingRoom = [];
 let readyRoom = [];
-let waitingRoom = [];
 
-// randomize player
+/* // Randomizes player
 const randomNumber = () => {
   return Math.floor(Math.random() * 2);
 };
-
-const getRoomById = () => {
-  return room.find((room) => room === room);
-};
-
-const getRoomByUserId = (id) => {
-  return room.find((room) => room.hasOwnProperty(id));
-};
+ */
 
 //Lyssnar på "user_connected" och pushar in användaren i waitingRoom. När det finns två användare pushas de sedan in i rummet.
 const handleUserJoined = async (socketID) => {
@@ -52,25 +45,71 @@ const handleUserJoined = async (socketID) => {
 };
 
 const handleDisconnect = async () => {
-  // let everyone in the room know that this user has disconnected
+  //Säger till den andra användaren att motspelaren lämnat
   io.to(room).emit("user_disconnected");
 
+  //Tömmer rummen
   room = [];
+  readyRoom = [];
 
   debug(`The other user disconnected from the room 😓`);
 };
 
-const handleClickedOnBox = (click) => {
-  debug(`User clicked on box ${click}`);
+//Funktion som bara shufflar arrayn som man ger den med hjälp av Fisher-Yates/Knuth-shuffle...
+const shuffleArray = (array) => {
+  let currentIndex = array.length,
+    randomIndex;
+
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
 };
 
+//Lyssnar efter player_ready och tar emot id:t på personerna som är redo
 const handlePlayerReady = (socketID) => {
+  //Pushar in dem i ett tomt rum
+  readyRoom.push(socketID);
+
+  //När båda är redo så...
+  if (readyRoom.length === 2) {
+    //Shufflar man arrayen med de båda spelarna och...
+    let shuffledArray = shuffleArray(readyRoom);
+
+    debug("The first round goes to the user with the ID: ", readyRoom[0], "😎");
+
+    //Skickar ut till respektive vem som ska börja och vem som får vänta
+    io.to(shuffledArray[0]).emit("you_start");
+    io.to(shuffledArray[1]).emit("not_your_turn");
+
+    //Tar bort användarna från readyRoom
+    readyRoom.splice(0, 2);
+  }
+};
+
+/* const handlePlayerReady = (socketID) => {
   readyRoom.push(socketID);
   if (readyRoom.length === 2) {
     const randomIndex = randomNumber();
-    debug(readyRoom[randomIndex]);
+    debug(
+      "The first round goes to the user with the ID: ",
+      readyRoom[randomIndex],
+      "1️⃣"
+    );
     io.to(readyRoom[randomIndex]).emit("your_turn");
+    readyRoom = [];
   }
+}; */
+
+const handleClickedOnBox = (click) => {
+  debug(`User clicked on box ${click}`);
 };
 
 //Export controller and attach handlers to events
