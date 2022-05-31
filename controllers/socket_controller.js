@@ -6,14 +6,8 @@ let io = null;
 
 //Sätter alla rum till arrayer
 let room = [];
-const waitingRoom = [];
+let waitingRoom = [];
 let readyRoom = [];
-
-/* // Randomizes player
-const randomNumber = () => {
-  return Math.floor(Math.random() * 2);
-};
- */
 
 //Lyssnar på "user_connected" och pushar in användaren i waitingRoom. När det finns två användare pushas de sedan in i rummet.
 const handleUserJoined = async (socketID) => {
@@ -50,6 +44,7 @@ const handleDisconnect = async () => {
 
   //Tömmer rummen
   room = [];
+  waitingRoom = [];
   readyRoom = [];
 
   debug(`The other user disconnected from the room 😓`);
@@ -93,20 +88,6 @@ const handlePlayerReady = (socketID) => {
     readyRoom.splice(0, 2);
   }
 };
-
-/* const handlePlayerReady = (socketID) => {
-  readyRoom.push(socketID);
-  if (readyRoom.length === 2) {
-    const randomIndex = randomNumber();
-    debug(
-      "The first round goes to the user with the ID: ",
-      readyRoom[randomIndex],
-      "1️⃣"
-    );
-    io.to(readyRoom[randomIndex]).emit("your_turn");
-    readyRoom = [];
-  }
-}; */
 
 const handleClickedOnBox = (click) => {
   debug(`User clicked on box ${click}`);
