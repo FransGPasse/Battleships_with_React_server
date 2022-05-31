@@ -78,7 +78,11 @@ const handlePlayerReady = (socketID) => {
     //Shufflar man arrayen med de båda spelarna och...
     let shuffledArray = shuffleArray(readyRoom);
 
-    debug("The first round goes to the user with the ID: ", readyRoom[0], "😎");
+    debug(
+      "The first round goes to the user with the ID: ",
+      shuffledArray[0],
+      "😎"
+    );
 
     //Skickar ut till respektive vem som ska börja och vem som får vänta
     io.to(shuffledArray[0]).emit("you_start");
