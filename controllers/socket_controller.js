@@ -93,13 +93,28 @@ const handlePlayerReady = (socketID) => {
   }
 };
 
-const handleClickedOnBox = function (click, socketID) {
-  debug(`User clicked on box ${click}`);
-  // find opponent
-  const enemy = room.find(user => user !== socketID)
-  debug("This is my enemy", enemy)
-  // emit to opponent
-  io.to(enemy).emit("hit_or_miss", click)
+const handleClickedOnBox = function (clickedBoxID, socketID) {
+  debug(`User clicked on ${clickedBoxID}`);
+
+  //Hittar motståndaren
+  const opponent = room.find((user) => user !== socketID);
+
+  //Emittar en koll om det var träff eller inte till motståndaren
+  io.to(opponent).emit("hit_or_miss", clickedBoxID);
+};
+
+const handleHit = function (socketID, clickedBox, hit) {
+  //Hittar motståndaren
+  const opponent = room.find((user) => user !== socketID);
+
+  io.to(opponent).emit("hit_ship", clickedBox);
+};
+
+const handleMiss = function (socketID, clickedBox, hit) {
+  //Hittar motståndaren
+  const opponent = room.find((user) => user !== socketID);
+
+  io.to(opponent).emit("missed_ship", clickedBox);
 };
 
 //Export controller and attach handlers to events
@@ -107,15 +122,21 @@ module.exports = function (socket, _io) {
   // save a reference to the socket.io server instance
   io = _io;
 
-  //When the user connects, send this through debug in the terminal
+  //Hanterar att en användare ansluter
   socket.on("user_connected", handleUserJoined);
 
-  // handle user disconnect
+  //Hanterar när en användare stänger ner fönstret
   socket.on("disconnect", handleDisconnect);
 
-  // handle clicked on box
+  //Hanterar spelare redo
+  socket.on("player_ready", handlePlayerReady);
+
+  //Hanterar när en låda klickas på
   socket.on("clicked_box", handleClickedOnBox);
 
-  // handle player ready
-  socket.on("player_ready", handlePlayerReady);
+  //Hanterar träffar
+  socket.on("hit", handleHit);
+
+  //Hanterar missar
+  socket.on("miss", handleMiss);
 };
