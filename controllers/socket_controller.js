@@ -93,8 +93,13 @@ const handlePlayerReady = (socketID) => {
   }
 };
 
-const handleClickedOnBox = (click) => {
+const handleClickedOnBox = function (click, socketID) {
   debug(`User clicked on box ${click}`);
+  // find opponent
+  const enemy = room.find(user => user !== socketID)
+  debug("This is my enemy", enemy)
+  // emit to opponent
+  io.to(enemy).emit("hit_or_miss", click)
 };
 
 //Export controller and attach handlers to events
