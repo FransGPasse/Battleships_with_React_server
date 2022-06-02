@@ -94,27 +94,31 @@ const handlePlayerReady = (socketID) => {
 };
 
 const handleClickedOnBox = function (clickedBoxID, socketID) {
-  debug(`User clicked on ${clickedBoxID}`);
+  //Slicear av "opp" från den klickade lådans ID och...
+  let slicedBoxID = clickedBoxID.slice(4, clickedBoxID.length);
 
-  //Hittar motståndaren
+  //Skickar ut i konsolen
+  debug(`User clicked on ${slicedBoxID}`);
+
+  //Hittar därefter motståndaren och...
   const opponent = room.find((user) => user !== socketID);
 
   //Emittar en koll om det var träff eller inte till motståndaren
-  io.to(opponent).emit("hit_or_miss", clickedBoxID);
+  io.to(opponent).emit("hit_or_miss", slicedBoxID, socketID);
 };
 
 const handleHit = function (socketID, clickedBox, hit) {
   //Hittar motståndaren
   const opponent = room.find((user) => user !== socketID);
 
-  io.to(opponent).emit("hit_ship", clickedBox);
+  io.to(room).emit("hit_ship", clickedBox);
 };
 
 const handleMiss = function (socketID, clickedBox, hit) {
   //Hittar motståndaren
   const opponent = room.find((user) => user !== socketID);
 
-  io.to(opponent).emit("missed_ship", clickedBox);
+  io.to(room).emit("missed_ship", clickedBox);
 };
 
 //Export controller and attach handlers to events
