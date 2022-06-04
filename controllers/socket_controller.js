@@ -93,6 +93,7 @@ const handlePlayerReady = (socketID) => {
   }
 };
 
+//Lyssnar efter klick på "opponentGameBoard" och hantera
 const handleClickedOnBox = function (clickedBoxID, socketID) {
   //Slicear av "opp" från den klickade lådans ID och...
   let slicedBoxID = clickedBoxID.slice(4, clickedBoxID.length);
@@ -107,18 +108,11 @@ const handleClickedOnBox = function (clickedBoxID, socketID) {
   io.to(opponent).emit("hit_or_miss", slicedBoxID, socketID);
 };
 
-const handleHit = function (socketID, clickedBox, hit) {
-  //Hittar motståndaren
-  const opponent = room.find((user) => user !== socketID);
+//Lyssnar efter "ship_response" och tar emot ett Boolskt-värde om det var träff eller ej
+const handleShipResponse = function (clickedBox, hitShip, socketID) {
+  let concatBoxID = "opp-" + clickedBox;
 
-  io.to(room).emit("hit_ship", clickedBox);
-};
-
-const handleMiss = function (socketID, clickedBox, hit) {
-  //Hittar motståndaren
-  const opponent = room.find((user) => user !== socketID);
-
-  io.to(room).emit("missed_ship", clickedBox);
+  io.to(socketID).emit("server_ship_response", concatBoxID, hitShip);
 };
 
 //Export controller and attach handlers to events
@@ -138,9 +132,6 @@ module.exports = function (socket, _io) {
   //Hanterar när en låda klickas på
   socket.on("clicked_box", handleClickedOnBox);
 
-  //Hanterar träffar
-  socket.on("hit", handleHit);
-
-  //Hanterar missar
-  socket.on("miss", handleMiss);
+  //Hanterar träffar och missar
+  socket.on("ship_response", handleShipResponse);
 };
