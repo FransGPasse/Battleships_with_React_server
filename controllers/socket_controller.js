@@ -91,7 +91,7 @@ const handlePlayerReady = (socketID) => {
 
     //Skickar ut till respektive vem som ska börja och vem som får vänta
     io.to(shuffledArray[0]).emit("you_start");
-    io.to(shuffledArray[1]).emit("not_your_turn");
+    io.to(shuffledArray[1]).emit("not_your_start");
 
     //Tar bort användarna från readyRoom
     readyRoom.splice(0, 2);
@@ -111,6 +111,8 @@ const handleClickedOnBox = function (clickedBoxID, socketID) {
 
   //Emittar en koll om det var träff eller inte till motståndaren
   io.to(opponent).emit("hit_or_miss", slicedBoxID, socketID);
+  io.to(opponent).emit("your_turn_to_shoot"); 
+  io.to(socketID).emit("not_your_turn_to_shoot"); 
 };
 
 //Lyssnar efter "ship_response" och tar emot ett Boolskt-värde om det var träff eller ej
