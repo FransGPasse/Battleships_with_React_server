@@ -122,6 +122,15 @@ const handleShipResponse = function (clickedBox, hitShip, socketID) {
   io.to(socketID).emit("server_ship_response", concatBoxID, hitShip);
 };
 
+// Listen for "ship_change" and emit the change to the opponent
+const handleShipChange = function (shipsLeft, socketID) {
+  // find your opponent
+  const opponent = room.find((user) => user !== socketID);
+
+  // send amount of ships to opponent
+  io.to(opponent).emit("ship_change", shipsLeft)
+}
+
 //Export controller and attach handlers to events
 module.exports = function (socket, _io) {
   // save a reference to the socket.io server instance
@@ -141,4 +150,7 @@ module.exports = function (socket, _io) {
 
   //Hanterar träffar och missar
   socket.on("ship_response", handleShipResponse);
+
+  //Hanterar förändringar i motståndarens skepp
+  socket.on("ship_change", handleShipChange)
 };
