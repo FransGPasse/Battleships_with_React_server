@@ -131,6 +131,16 @@ const handleShipChange = function (shipsLeft, socketID) {
   io.to(opponent).emit("ship_change", shipsLeft)
 }
 
+// Listen for player loss
+const handlePlayerLoss = function (socketID) {
+   // find your opponent
+   const opponent = room.find((user) => user !== socketID);
+
+   // send amount of ships to opponent
+   io.to(opponent).emit("you_win")
+   io.to(socketID).emit("you_lose")
+}
+
 //Export controller and attach handlers to events
 module.exports = function (socket, _io) {
   // save a reference to the socket.io server instance
@@ -153,4 +163,7 @@ module.exports = function (socket, _io) {
 
   //Hanterar förändringar i motståndarens skepp
   socket.on("ship_change", handleShipChange)
+
+  //Hanterar om någon får slut på skepp
+  socket.on("you_lose", handlePlayerLoss)
 };
