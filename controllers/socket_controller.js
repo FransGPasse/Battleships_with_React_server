@@ -11,35 +11,29 @@ let readyRoom = [];
 
 //Lyssnar på "user_connected" och pushar in användaren i waitingRoom. När det finns två användare pushas de sedan in i rummet.
 const handleUserJoined = async (socketID) => {
-  if (room.length >= 2) {
-    io.to(socketID).emit("occupied_game")
+  waitingRoom.push(socketID);
 
+  //Om det finns två användare i waitingRoom pushas de in i rummet
+  if (waitingRoom.length === 2) {
+    room.push(waitingRoom[0], waitingRoom[1]);
+
+    //Sätter variabeln gameRoom till rummet innehållande de två spelarna
+    const gameRoom = room;
+
+    //Tar bort användarna från waitingRoom
+    waitingRoom.splice(0, 2);
+
+    //Skickar "start_game" till rummet
+    io.to(gameRoom).emit("start_game");
+
+    //Console.loggar spelarna
+    debug("Starting game 🟢 The players in the gameroom are:", gameRoom);
   } else {
-    //Pushar in den nya användaren i waitingRoom
-    waitingRoom.push(socketID);
+    //Emittar "waiting" till waitingRoom fram tills att det är två spelare i rummet
+    io.to(waitingRoom).emit("waiting");
 
-    //Om det finns två användare i waitingRoom pushas de in i rummet
-    if (waitingRoom.length === 2) {
-      room.push(waitingRoom[0], waitingRoom[1]);
-
-      //Sätter variabeln gameRoom till rummet innehållande de två spelarna
-      const gameRoom = room;
-
-      //Tar bort användarna från waitingRoom
-      waitingRoom.splice(0, 2);
-
-      //Skickar "start_game" till rummet
-      io.to(gameRoom).emit("start_game");
-
-      //Console.loggar spelarna
-      debug("Starting game 🟢 The players in the gameroom are:", gameRoom);
-    } else {
-      //Emittar "waiting" till waitingRoom fram tills att det är två spelare i rummet
-      io.to(waitingRoom).emit("waiting");
-
-      //Console.loggar waiting
-      debug("Waiting for game to start... 🔴");
-    }
+    //Console.loggar waiting
+    debug("Waiting for game to start... 🔴");
   }
 };
 
@@ -111,8 +105,8 @@ const handleClickedOnBox = function (clickedBoxID, socketID) {
 
   //Emittar en koll om det var träff eller inte till motståndaren
   io.to(opponent).emit("hit_or_miss", slicedBoxID, socketID);
-  io.to(opponent).emit("your_turn_to_shoot"); 
-  io.to(socketID).emit("not_your_turn_to_shoot"); 
+  io.to(opponent).emit("your_turn_to_shoot");
+  io.to(socketID).emit("not_your_turn_to_shoot");
 };
 
 //Lyssnar efter "ship_response" och tar emot ett Boolskt-värde om det var träff eller ej
@@ -128,18 +122,18 @@ const handleShipChange = function (shipsLeft, socketID) {
   const opponent = room.find((user) => user !== socketID);
 
   // send amount of ships to opponent
-  io.to(opponent).emit("ship_change", shipsLeft)
-}
+  io.to(opponent).emit("ship_change", shipsLeft);
+};
 
 // Listen for player loss
 const handlePlayerLoss = function (socketID) {
-   // find your opponent
-   const opponent = room.find((user) => user !== socketID);
+  // find your opponent
+  const opponent = room.find((user) => user !== socketID);
 
-   // send amount of ships to opponent
-   io.to(opponent).emit("you_win")
-   io.to(socketID).emit("you_lose")
-}
+  // send amount of ships to opponent
+  io.to(opponent).emit("you_win");
+  io.to(socketID).emit("you_lose");
+};
 
 //Export controller and attach handlers to events
 module.exports = function (socket, _io) {
@@ -162,8 +156,8 @@ module.exports = function (socket, _io) {
   socket.on("ship_response", handleShipResponse);
 
   //Hanterar förändringar i motståndarens skepp
-  socket.on("ship_change", handleShipChange)
+  socket.on("ship_change", handleShipChange);
 
   //Hanterar om någon får slut på skepp
-  socket.on("you_lose", handlePlayerLoss)
+  socket.on("you_lose", handlePlayerLoss);
 };
